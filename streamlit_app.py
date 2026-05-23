@@ -1,5 +1,3 @@
-pd.read_excel("data/2025년 서울서베이 시민조사_통계표.xlsx")
-
 import streamlit as st
 import pandas as pd
 import numpy as np
