@@ -22,8 +22,8 @@ DATA_PATH = Path("data/현재_거주_지역의_주거환경_만족도_2026052317
 st.markdown(
     """
     <style>
-    .main {
-        background-color: #f6f8fb;
+    .stApp {
+        background-color: #111827;
     }
 
     .block-container {
@@ -32,111 +32,224 @@ st.markdown(
     }
 
     .dashboard-title {
-        font-size: 2.2rem;
-        font-weight: 800;
-        color: #102a43;
-        margin-bottom: 0.2rem;
+        font-size: 2.4rem;
+        font-weight: 900;
+        color: #f8fafc;
+        margin-bottom: 0.3rem;
     }
 
     .dashboard-subtitle {
-        font-size: 1rem;
-        color: #52606d;
-        margin-bottom: 1.5rem;
+        font-size: 1.05rem;
+        color: #cbd5e1;
+        margin-bottom: 1.8rem;
     }
 
     .metric-card {
         background: white;
         padding: 1.2rem;
         border-radius: 18px;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+        box-shadow: 0 4px 14px rgba(0,0,0,0.12);
         border: 1px solid #e5eaf0;
         height: 150px;
     }
 
     .metric-title {
-        color: #627d98;
-        font-size: 0.9rem;
-        font-weight: 600;
-        margin-bottom: 0.4rem;
+        color: #64748b;
+        font-size: 0.95rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
     }
 
     .metric-value {
-        color: #102a43;
-        font-size: 1.8rem;
-        font-weight: 800;
+        color: #111827;
+        font-size: 2rem;
+        font-weight: 900;
     }
 
     .metric-desc {
-        color: #829ab1;
-        font-size: 0.85rem;
-        margin-top: 0.3rem;
-    }
-
-    .section-card {
-        background: white;
-        padding: 1.2rem;
-        border-radius: 18px;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.05);
-        border: 1px solid #e5eaf0;
-        margin-bottom: 1rem;
+        color: #94a3b8;
+        font-size: 0.9rem;
+        margin-top: 0.4rem;
     }
 
     .small-label {
         display: inline-block;
         padding: 0.25rem 0.65rem;
-        background-color: #e6f0ff;
+        background-color: #dbeafe;
         color: #1d4ed8;
         border-radius: 999px;
         font-size: 0.75rem;
-        font-weight: 700;
+        font-weight: 800;
         margin-bottom: 0.5rem;
     }
 
+    h1, h2, h3 {
+        color: #f8fafc !important;
+    }
+
+    p, li, label, .stMarkdown {
+        color: #e5e7eb;
+    }
+
+    div[data-testid="stMetricLabel"] {
+        color: #e5e7eb;
+    }
+
     div[data-testid="stMetricValue"] {
-        font-size: 1.7rem;
-        font-weight: 800;
+        color: #ffffff;
+        font-weight: 900;
+    }
+
+    div[data-testid="stMetricDelta"] {
+        color: #cbd5e1;
+    }
+
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 1rem;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        color: #e5e7eb;
+        font-weight: 700;
+        font-size: 1rem;
+    }
+
+    .stTabs [aria-selected="true"] {
+        color: #f87171;
+    }
+
+    section[data-testid="stSidebar"] {
+        background-color: #0f172a;
+    }
+
+    section[data-testid="stSidebar"] h1,
+    section[data-testid="stSidebar"] h2,
+    section[data-testid="stSidebar"] h3,
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] p {
+        color: #f8fafc !important;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-
 # =========================
 # 데이터 로드
 # =========================
 @st.cache_data
 def load_housing_satisfaction(path):
-    # KOSIS CSV는 보통 cp949 인코딩인 경우가 많음
     try:
         raw = pd.read_csv(path, encoding="cp949")
     except UnicodeDecodeError:
         raw = pd.read_csv(path, encoding="utf-8-sig")
 
-    # 첫 번째 행에 실제 지표명이 들어 있다고 가정
     indicator_names = raw.iloc[0, 2:].tolist()
 
-    # 지역별 행만 추출
     df = raw[raw["특성별(1)"] == "지역별"].copy()
 
-    # 컬럼명 정리
     new_columns = ["category", "region"] + indicator_names
     df.columns = new_columns
     df = df.drop(columns=["category"])
 
-    # 숫자형 변환
     for col in df.columns:
         if col != "region":
             df[col] = pd.to_numeric(df[col], errors="coerce")
 
     indicator_cols = [col for col in df.columns if col != "region"]
 
-    # 종합지수 생성
     df["종합 주거환경 만족도"] = df[indicator_cols].mean(axis=1)
 
     return df, indicator_cols
 
 
+# =========================
+# Plotly 공통 스타일
+# =========================
+def style_plotly_chart(fig, height=500):
+    fig.update_layout(
+        height=height,
+        plot_bgcolor="white",
+        paper_bgcolor="white",
+        font=dict(color="black", size=13),
+        title_font=dict(color="black", size=20),
+        xaxis=dict(
+            title_font=dict(color="black"),
+            tickfont=dict(color="black"),
+            gridcolor="#d9dee7",
+            zerolinecolor="#d9dee7",
+            linecolor="#94a3b8"
+        ),
+        yaxis=dict(
+            title_font=dict(color="black"),
+            tickfont=dict(color="black"),
+            gridcolor="#d9dee7",
+            zerolinecolor="#d9dee7",
+            linecolor="#94a3b8"
+        ),
+        legend=dict(
+            title_font=dict(color="black"),
+            font=dict(color="black")
+        ),
+        margin=dict(l=30, r=30, t=70, b=30)
+    )
+    return fig
+
+
+def style_heatmap(fig, height=550):
+    fig.update_layout(
+        height=height,
+        plot_bgcolor="white",
+        paper_bgcolor="white",
+        font=dict(color="black", size=12),
+        title_font=dict(color="black", size=20),
+        xaxis=dict(
+            title_font=dict(color="black"),
+            tickfont=dict(color="black")
+        ),
+        yaxis=dict(
+            title_font=dict(color="black"),
+            tickfont=dict(color="black")
+        ),
+        coloraxis_colorbar=dict(
+            title_font=dict(color="black"),
+            tickfont=dict(color="black")
+        ),
+        margin=dict(l=30, r=30, t=70, b=30)
+    )
+    return fig
+
+
+def style_polar_chart(fig, height=520):
+    fig.update_polars(
+        radialaxis=dict(
+            range=[0, 5],
+            tickfont=dict(color="black"),
+            gridcolor="#cfd8e3",
+            linecolor="black"
+        ),
+        angularaxis=dict(
+            tickfont=dict(color="black", size=13),
+            linecolor="black",
+            gridcolor="#cfd8e3"
+        ),
+        bgcolor="white"
+    )
+
+    fig.update_layout(
+        height=height,
+        plot_bgcolor="white",
+        paper_bgcolor="white",
+        font=dict(color="black", size=13),
+        title_font=dict(color="black", size=20),
+        margin=dict(l=40, r=40, t=70, b=40)
+    )
+    return fig
+
+
+# =========================
+# 파일 확인
+# =========================
 if not DATA_PATH.exists():
     st.error(f"파일을 찾을 수 없습니다: {DATA_PATH}")
     st.stop()
@@ -327,17 +440,12 @@ with tab1:
             texttemplate="%{text:.2f}",
             textposition="outside",
             marker_line_width=0.7,
-            marker_line_color="white"
+            marker_line_color="white",
+            textfont=dict(color="black")
         )
-        fig.update_layout(
-            height=520,
-            plot_bgcolor="white",
-            paper_bgcolor="white",
-            title_font_size=20,
-            font=dict(size=13),
-            margin=dict(l=30, r=30, t=70, b=30)
-        )
-        fig.update_yaxes(range=[0, 5], gridcolor="#e5eaf0")
+        fig = style_plotly_chart(fig, height=520)
+        fig.update_yaxes(range=[0, 5], gridcolor="#d9dee7", tickfont=dict(color="black"))
+        fig.update_xaxes(tickfont=dict(color="black"))
         st.plotly_chart(fig, use_container_width=True)
     else:
         st.dataframe(
@@ -374,13 +482,14 @@ with tab1:
                 "종합 주거환경 만족도": "만족도"
             }
         )
-        fig.update_traces(texttemplate="%{text:.2f}", textposition="outside")
-        fig.update_layout(
-            height=430,
-            plot_bgcolor="white",
-            paper_bgcolor="white"
+        fig.update_traces(
+            texttemplate="%{text:.2f}",
+            textposition="outside",
+            textfont=dict(color="black")
         )
-        fig.update_xaxes(range=[0, 5], gridcolor="#e5eaf0")
+        fig = style_plotly_chart(fig, height=430)
+        fig.update_xaxes(range=[0, 5], gridcolor="#d9dee7", tickfont=dict(color="black"))
+        fig.update_yaxes(tickfont=dict(color="black"))
         st.plotly_chart(fig, use_container_width=True)
 
     with col_right:
@@ -403,20 +512,20 @@ with tab1:
         fig.add_hline(
             y=full_avg,
             line_dash="dash",
+            line_color="black",
             annotation_text=f"전국 평균 {full_avg:.2f}",
-            annotation_position="top left"
+            annotation_position="top left",
+            annotation_font_color="black"
         )
 
         fig.update_layout(
-            height=430,
             title="시도별 종합 만족도 분포",
-            yaxis_title="만족도",
-            plot_bgcolor="white",
-            paper_bgcolor="white"
+            yaxis_title="만족도"
         )
-        fig.update_yaxes(range=[0, 5], gridcolor="#e5eaf0")
+        fig = style_plotly_chart(fig, height=430)
+        fig.update_yaxes(range=[0, 5], gridcolor="#d9dee7", tickfont=dict(color="black"))
+        fig.update_xaxes(tickfont=dict(color="black"))
         st.plotly_chart(fig, use_container_width=True)
-
 
 # =========================
 # TAB 2. 지표별 비교
@@ -444,11 +553,8 @@ with tab2:
             zmin=3,
             zmax=5
         )
-        fig.update_layout(
-            height=620,
-            plot_bgcolor="white",
-            paper_bgcolor="white"
-        )
+        fig.update_traces(textfont=dict(color="black"))
+        fig = style_heatmap(fig, height=620)
         st.plotly_chart(fig, use_container_width=True)
 
     with col2:
@@ -470,13 +576,14 @@ with tab2:
             color="전국 평균",
             color_continuous_scale="Teal"
         )
-        fig.update_traces(texttemplate="%{text:.2f}", textposition="outside")
-        fig.update_layout(
-            height=620,
-            plot_bgcolor="white",
-            paper_bgcolor="white"
+        fig.update_traces(
+            texttemplate="%{text:.2f}",
+            textposition="outside",
+            textfont=dict(color="black")
         )
-        fig.update_xaxes(range=[0, 5], gridcolor="#e5eaf0")
+        fig = style_plotly_chart(fig, height=620)
+        fig.update_xaxes(range=[0, 5], gridcolor="#d9dee7", tickfont=dict(color="black"))
+        fig.update_yaxes(tickfont=dict(color="black"))
         st.plotly_chart(fig, use_container_width=True)
 
     st.markdown("---")
@@ -504,17 +611,19 @@ with tab2:
     fig.add_hline(
         y=detail_df[selected_detail_indicator].mean(),
         line_dash="dash",
+        line_color="black",
         annotation_text="평균",
-        annotation_position="top left"
+        annotation_position="top left",
+        annotation_font_color="black"
     )
-    fig.update_layout(
-        height=430,
-        plot_bgcolor="white",
-        paper_bgcolor="white"
+    fig.update_traces(
+        line=dict(width=3),
+        marker=dict(size=9)
     )
-    fig.update_yaxes(range=[0, 5], gridcolor="#e5eaf0")
+    fig = style_plotly_chart(fig, height=430)
+    fig.update_yaxes(range=[0, 5], gridcolor="#d9dee7", tickfont=dict(color="black"))
+    fig.update_xaxes(tickfont=dict(color="black"))
     st.plotly_chart(fig, use_container_width=True)
-
 
 # =========================
 # TAB 3. 권역 분석
@@ -541,13 +650,14 @@ with tab3:
             color_continuous_scale="Blues",
             title="권역별 종합 주거환경 만족도"
         )
-        fig.update_traces(texttemplate="%{text:.2f}", textposition="outside")
-        fig.update_yaxes(range=[0, 5], gridcolor="#e5eaf0")
-        fig.update_layout(
-            height=450,
-            plot_bgcolor="white",
-            paper_bgcolor="white"
+        fig.update_traces(
+            texttemplate="%{text:.2f}",
+            textposition="outside",
+            textfont=dict(color="black")
         )
+        fig = style_plotly_chart(fig, height=450)
+        fig.update_yaxes(range=[0, 5], gridcolor="#d9dee7", tickfont=dict(color="black"))
+        fig.update_xaxes(tickfont=dict(color="black"))
         st.plotly_chart(fig, use_container_width=True)
 
     with col2:
@@ -562,11 +672,8 @@ with tab3:
             zmin=3,
             zmax=5
         )
-        fig.update_layout(
-            height=450,
-            plot_bgcolor="white",
-            paper_bgcolor="white"
-        )
+        fig.update_traces(textfont=dict(color="black"))
+        fig = style_heatmap(fig, height=450)
         st.plotly_chart(fig, use_container_width=True)
 
     st.markdown("---")
@@ -580,9 +687,17 @@ with tab3:
         values="지역 수",
         title="권역별 포함 시도 수"
     )
-    fig.update_layout(height=430)
+    fig.update_traces(
+        textfont=dict(color="black", size=16)
+    )
+    fig.update_layout(
+        height=430,
+        font=dict(color="black"),
+        title_font=dict(color="black", size=20),
+        paper_bgcolor="white",
+        margin=dict(l=30, r=30, t=70, b=30)
+    )
     st.plotly_chart(fig, use_container_width=True)
-
 
 # =========================
 # TAB 4. 도시 프로필
@@ -627,13 +742,11 @@ with tab4:
             line_close=True,
             title=f"{selected_city} 주거환경 레이더차트"
         )
-        fig.update_traces(fill="toself")
-        fig.update_polars(radialaxis=dict(range=[0, 5]))
-        fig.update_layout(
-            height=520,
-            plot_bgcolor="white",
-            paper_bgcolor="white"
+        fig.update_traces(
+            fill="toself",
+            line=dict(width=3)
         )
+        fig = style_polar_chart(fig, height=520)
         st.plotly_chart(fig, use_container_width=True)
 
     with col_right:
@@ -656,12 +769,10 @@ with tab4:
             color_continuous_scale="RdBu",
             title=f"{selected_city}의 전국 평균 대비 강점·약점"
         )
-        fig.add_vline(x=0, line_dash="dash")
-        fig.update_layout(
-            height=520,
-            plot_bgcolor="white",
-            paper_bgcolor="white"
-        )
+        fig.add_vline(x=0, line_dash="dash", line_color="black")
+        fig = style_plotly_chart(fig, height=520)
+        fig.update_xaxes(tickfont=dict(color="black"), gridcolor="#d9dee7")
+        fig.update_yaxes(tickfont=dict(color="black"))
         st.plotly_chart(fig, use_container_width=True)
 
     weak_items = (
@@ -697,7 +808,6 @@ with tab4:
         "취약 지표는 이후 예산 배분 시뮬레이션에서 우선 투자 영역으로 연결할 수 있습니다. "
         "예를 들어 대중교통 만족도가 낮은 도시는 교통·인프라 예산, 녹지 공간 만족도가 낮은 도시는 환경·에너지 투자를 높이는 방식으로 확장할 수 있습니다."
     )
-
 
 # =========================
 # TAB 5. 데이터 표
