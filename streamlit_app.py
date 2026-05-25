@@ -157,55 +157,56 @@ div[data-testid="stMetricDelta"] {{
 
 .hero {{
     background:
-        radial-gradient(circle at 7% 18%, rgba(191,167,232,0.34) 0, rgba(191,167,232,0.00) 32%),
-        linear-gradient(135deg, #DDEEFF 0%, #EAF8F4 52%, #F7F3FF 100%);
-    border: 1px solid #CFE0F2;
-    border-radius: 30px;
-    padding: 32px 36px;
-    box-shadow: 0 16px 34px rgba(36,59,83,0.10);
+        radial-gradient(circle at 8% 14%, rgba(191,167,232,0.25) 0, rgba(191,167,232,0.00) 34%),
+        radial-gradient(circle at 92% 18%, rgba(126,168,230,0.23) 0, rgba(126,168,230,0.00) 32%),
+        linear-gradient(135deg, #EEF6FF 0%, #F3FBF8 55%, #FAF7FF 100%);
+    border: 1px solid #D7E5F4;
+    border-radius: 28px;
+    padding: 28px 32px;
+    box-shadow: 0 14px 30px rgba(36,59,83,0.08);
     margin-bottom: 22px;
 }}
 
 .hero-grid {{
     display: grid;
-    grid-template-columns: 1.35fr 0.85fr;
-    gap: 30px;
+    grid-template-columns: 1.25fr 0.75fr;
+    gap: 34px;
     align-items: center;
 }}
 
 .hero-eyebrow {{
     display: inline-block;
-    background: rgba(37,99,235,0.10);
-    color: #1D4ED8;
-    border: 1px solid rgba(37,99,235,0.18);
+    background: rgba(126,168,230,0.18);
+    color: #2563EB;
+    border: 1px solid rgba(126,168,230,0.28);
     border-radius: 999px;
     padding: 7px 13px;
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     font-weight: 900;
-    margin-bottom: 13px;
+    margin-bottom: 12px;
 }}
 
 .hero-title {{
-    font-size: 2.35rem;
-    line-height: 1.25;
+    font-size: 2.05rem;
+    line-height: 1.26;
     font-weight: 950;
     letter-spacing: -0.04em;
     margin-bottom: 12px;
 }}
 
 .hero-subtitle {{
-    color: {PALETTE["muted"]};
-    font-size: 1.03rem;
-    line-height: 1.72;
-    max-width: 900px;
+    color: #64748B;
+    font-size: 0.96rem;
+    line-height: 1.62;
+    max-width: 820px;
 }}
 
 .hero-panel {{
-    background: rgba(255,255,255,0.78);
-    border: 1px solid #D5E3F3;
-    border-radius: 24px;
-    padding: 18px 20px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.88);
+    background: rgba(255,255,255,0.82);
+    border: 1px solid #D8E6F4;
+    border-radius: 22px;
+    padding: 16px 18px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.90);
 }}
 
 .hero-row {{
@@ -213,9 +214,10 @@ div[data-testid="stMetricDelta"] {{
     justify-content: space-between;
     gap: 14px;
     align-items: center;
-    border-bottom: 1px solid #D9E2EC;
-    padding: 10px 0;
+    border-bottom: 1px solid #E1EAF4;
+    padding: 9px 0;
     font-weight: 850;
+    font-size: 0.94rem;
 }}
 
 .hero-row:last-child {{
@@ -229,12 +231,12 @@ div[data-testid="stMetricDelta"] {{
 }}
 
 .metric-card {{
-    background: {PALETTE["surface"]};
-    border: 1px solid {PALETTE["line"]};
+    background: linear-gradient(180deg, #FFFFFF 0%, #F8FBFF 100%);
+    border: 1px solid #DCE8F5;
     border-radius: 20px;
-    padding: 18px 20px;
-    min-height: 148px;
-    box-shadow: 0 10px 24px rgba(15,23,42,0.06);
+    padding: 16px 18px;
+    min-height: 132px;
+    box-shadow: 0 9px 20px rgba(15,23,42,0.045);
 }}
 
 .metric-title {{
@@ -245,17 +247,17 @@ div[data-testid="stMetricDelta"] {{
 }}
 
 .metric-value {{
-    font-size: 1.95rem;
+    font-size: 1.62rem;
     font-weight: 950;
-    color: {PALETTE["text"]};
-    line-height: 1.1;
+    color: #111827;
+    line-height: 1.12;
 }}
 
 .metric-desc {{
-    font-size: 0.9rem;
-    color: {PALETTE["muted"]};
+    font-size: 0.84rem;
+    color: #64748B;
     margin-top: 8px;
-    line-height: 1.45;
+    line-height: 1.42;
 }}
 
 .small-label {{
@@ -316,30 +318,30 @@ div[data-testid="stMetricDelta"] {{
 .flow-grid {{
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin: 18px 0 10px;
+    gap: 18px;
+    margin: 22px 0 12px;
 }}
 
 .flow-card {{
-    background: #FFFFFF;
-    border: 1px solid {PALETTE["line"]};
+    background: linear-gradient(180deg, #FFFFFF 0%, #F8FBFF 100%);
+    border: 1px solid #DCE8F5;
     border-radius: 22px;
-    padding: 20px 20px;
-    min-height: 170px;
-    box-shadow: 0 10px 24px rgba(15,23,42,0.05);
+    padding: 18px 20px;
+    min-height: 142px;
+    box-shadow: 0 9px 20px rgba(15,23,42,0.045);
 }}
 
 .flow-num {{
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
     border-radius: 14px;
-    background: #DBEAFE;
-    color: #1D4ED8 !important;
+    background: #E3EEFF;
+    color: #2563EB !important;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 950;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }}
 
 .flow-title {{
@@ -349,9 +351,9 @@ div[data-testid="stMetricDelta"] {{
 }}
 
 .flow-text {{
-    color: {PALETTE["muted"]};
-    font-size: 0.94rem;
-    line-height: 1.6;
+    color: #64748B;
+    font-size: 0.88rem;
+    line-height: 1.52;
 }}
 
 .policy-map-card {{
@@ -640,28 +642,26 @@ def render_distribution_flow():
         <div class="flow-grid">
             <div class="flow-card">
                 <div class="flow-num">1</div>
-                <div class="flow-title">지역 간 차이가 있다</div>
+                <div class="flow-title">지역마다 차이가 있다</div>
                 <div class="flow-text">
-                    시도별 종합 만족도와 세부 지표가 동일하지 않습니다.
-                    도시의 수준은 하나의 평균값으로 설명되지 않습니다.
+                    종합 만족도와 세부 지표는 시도마다 다르게 나타납니다.
                 </div>
             </div>
             <div class="flow-card">
                 <div class="flow-num">2</div>
-                <div class="flow-title">차이는 지표별로 다르다</div>
+                <div class="flow-title">부족한 지표도 다르다</div>
                 <div class="flow-text">
-                    어떤 지역은 교통이 약하고, 어떤 지역은 교육·녹지·방범이 약합니다.
-                    필요한 처방이 서로 다릅니다.
+                    어떤 곳은 교통, 어떤 곳은 교육·녹지·방범이 더 취약합니다.
                 </div>
             </div>
             <div class="flow-card">
                 <div class="flow-num">3</div>
-                <div class="flow-title">그래서 배분이 중요하다</div>
+                <div class="flow-title">결국 배분의 문제다</div>
                 <div class="flow-text">
-                    문제는 기술의 유무가 아니라,
-                    한정된 자원을 어디에 우선 배분할 것인가입니다.
+                    도시 수준은 필요한 자원을 어디에 우선 두는지에 따라 달라집니다.
                 </div>
             </div>
+        </div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -703,17 +703,6 @@ top_n = st.sidebar.slider(
     value=len(df),
 )
 
-st.sidebar.markdown("---")
-st.sidebar.markdown("### 해석 흐름")
-st.sidebar.markdown(
-    """
-- 만족도 차이 확인
-- 취약 지표 확인
-- 취약 지표를 배분 영역으로 해석
-- 결론 도출
-"""
-)
-
 if "전체" in selected_groups:
     filtered_df = df.copy()
 else:
@@ -746,11 +735,10 @@ st.markdown(
         <div class="hero-grid">
             <div>
                 <div class="hero-eyebrow">Regional Housing Satisfaction Dashboard</div>
-                <div class="hero-title">도시 만족도의 차이는<br>어디에 자원이 배분되었는지를 보여준다.</div>
+                <div class="hero-title">도시 만족도의 차이는<br>배분의 차이를 보여준다.</div>
                 <div class="hero-subtitle">
-                    시도별 주거환경 만족도를 생활 인프라, 교통, 방범, 위생, 녹지, 문화, 교육, 이웃 관계로 나누어 봅니다.
-                    이 대시보드의 목적은 순위를 매기는 것이 아니라
-                    <b>왜 도시 수준을 결정하는 핵심이 ‘기술’보다 ‘배분’인지</b>를 시각적으로 확인하는 것입니다.
+                    생활 인프라, 교통, 방범, 위생, 녹지, 문화, 교육, 이웃 관계를 비교해
+                    도시 수준이 단순한 기술 보유가 아니라 <b>자원이 어디에 배분되었는지</b>와 연결됨을 확인합니다.
                 </div>
             </div>
             <div class="hero-panel">
@@ -768,16 +756,16 @@ st.markdown(
 c1, c2, c3, c4 = st.columns(4)
 
 with c1:
-    render_metric_card("전국 평균", f"{full_avg:.2f} / 5", "8개 주거환경 지표 평균")
+    render_metric_card("전국 평균", f"{full_avg:.2f} / 5", "8개 지표 평균")
 
 with c2:
     render_metric_card("지역 간 격차", f"{gap:.2f}점", f"{top_region['region']} - {low_region['region']}")
 
 with c3:
-    render_metric_card("전국 평균 최저 지표", lowest_avg_indicator, f"{indicator_avg[lowest_avg_indicator]:.2f}점")
+    render_metric_card("가장 낮은 지표", lowest_avg_indicator, f"전국 평균 {indicator_avg[lowest_avg_indicator]:.2f}점")
 
 with c4:
-    render_metric_card("지역 차이가 큰 지표", most_divided_indicator, f"표준편차 {indicator_std[most_divided_indicator]:.2f}")
+    render_metric_card("차이가 큰 지표", most_divided_indicator, f"표준편차 {indicator_std[most_divided_indicator]:.2f}")
 
 render_distribution_flow()
 
@@ -786,9 +774,8 @@ st.markdown(
     <div class="conclusion-box">
         <div class="conclusion-title">중간 결론</div>
         <div class="conclusion-text">
-            같은 ‘도시’라도 부족한 지표는 서로 다릅니다.
-            따라서 좋은 도시는 기술을 많이 넣은 도시가 아니라,
-            각 지역에 필요한 자원을 정확히 배분한 도시입니다.
+            도시별 취약 지표가 다르다는 것은 필요한 자원도 다르다는 뜻입니다.
+            좋은 도시는 기술을 많이 넣은 도시가 아니라, 필요한 곳에 자원을 정확히 배분한 도시입니다.
         </div>
     </div>
     """,
