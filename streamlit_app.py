@@ -734,7 +734,6 @@ st.markdown(
     <div class="hero">
         <div class="hero-grid">
             <div>
-                <div class="hero-eyebrow">Regional Housing Satisfaction Dashboard</div>
                 <div class="hero-title">도시 만족도의 차이는<br>배분의 차이를 보여준다.</div>
                 <div class="hero-subtitle">
                     생활 인프라, 교통, 방범, 위생, 녹지, 문화, 교육, 이웃 관계를 비교해
