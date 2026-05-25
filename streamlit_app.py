@@ -1,7 +1,8 @@
 """
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 시도별 주거환경 만족도 광역지표
-→ 예산 및 에너지 배분 시뮬레이션으로 이어지는 전환형 대시보드
+결론 중심 버전:
+"기술이 아니라 배분이 도시의 수준을 결정한다"
 
 실행:
 streamlit run dashboard.py
@@ -39,8 +40,6 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-SIMULATION_URL = "https://gdp-dashboard-djcuxtlb7y.streamlit.app/"
-
 DATA_CANDIDATES = [
     Path("data/현재_거주_지역의_주거환경_만족도_20260523172214.csv"),
     Path("data/현재_거주_지역의_주거환경_만족도_20260523172214(1).csv"),
@@ -51,12 +50,12 @@ DATA_CANDIDATES = [
 PALETTE = {
     "bg": "#F8FAFC",
     "surface": "#FFFFFF",
-    "surface_2": "#EEF6FF",
-    "surface_3": "#F4F7FB",
+    "surface_blue": "#EFF6FF",
+    "surface_mint": "#ECFDF5",
+    "surface_purple": "#F5F3FF",
     "text": "#111827",
     "muted": "#64748B",
     "line": "#D9E2EC",
-    "navy": "#243B53",
     "blue": "#7EA8E6",
     "blue_dark": "#2563EB",
     "mint": "#7BCFA6",
@@ -66,56 +65,57 @@ PALETTE = {
     "red": "#CF222E",
     "purple": "#BFA7E8",
     "cyan": "#8FD8D2",
+    "navy": "#243B53",
 }
 
-INDICATOR_TO_POLICY = {
+INDICATOR_TO_ALLOCATION = {
     "생활 인프라": {
-        "budget": "일반 인프라",
-        "energy": "ESS·외부전력망 안정화",
-        "reason": "생활 편의 시설과 도시 기반시설 확충이 직접적으로 연결됩니다.",
+        "area": "일반 인프라",
         "emoji": "🏗️",
+        "short": "생활SOC·도시 기반시설",
+        "color": PALETTE["blue"],
     },
     "대중교통 이용": {
-        "budget": "일반 인프라",
-        "energy": "ESS·전기 교통 인프라",
-        "reason": "교통 접근성은 도로, 대중교통, 환승 거점 등 인프라 투입과 관련됩니다.",
+        "area": "일반 인프라",
         "emoji": "🚌",
+        "short": "교통 접근성·환승 체계",
+        "color": PALETTE["blue"],
     },
     "치안 및 범죄 등 방범 상태": {
-        "budget": "안전",
-        "energy": "외부전력망·ESS 백업",
-        "reason": "치안, 방범, CCTV, 재난 대응 체계가 안전 예산과 연결됩니다.",
+        "area": "안전",
         "emoji": "🛡️",
+        "short": "치안·방범·재난 대응",
+        "color": PALETTE["rose"],
     },
     "위생 환경": {
-        "budget": "복지 + 일반 인프라",
-        "energy": "에너지 인프라",
-        "reason": "위생·환경 관리는 공공서비스와 기반시설 유지 관리가 함께 필요합니다.",
+        "area": "복지·인프라",
         "emoji": "🧼",
+        "short": "공공서비스·환경 관리",
+        "color": PALETTE["mint"],
     },
     "녹지 공간": {
-        "budget": "에너지 인프라 + 일반 인프라",
-        "energy": "태양광·ESS",
-        "reason": "녹지와 친환경 인프라는 에너지 자립과 도시 환경 개선을 동시에 보여줍니다.",
+        "area": "에너지·환경 인프라",
         "emoji": "🌿",
+        "short": "친환경 기반·공원·녹지",
+        "color": PALETTE["green"],
     },
     "문화/ 부대시설": {
-        "budget": "교육 + 일반 인프라",
-        "energy": "ESS",
-        "reason": "문화·부대시설은 활동 기회와 생활SOC 투자로 확장됩니다.",
+        "area": "교육·생활SOC",
         "emoji": "🎭",
+        "short": "문화시설·활동 기회",
+        "color": PALETTE["purple"],
     },
     "교육 환경": {
-        "budget": "교육",
-        "energy": "ESS·스마트 캠퍼스 인프라",
-        "reason": "학교, 평생학습, 직업훈련, 청년 기회와 직접적으로 연결됩니다.",
+        "area": "교육",
         "emoji": "🎓",
+        "short": "학교·학습·청년 기회",
+        "color": PALETTE["purple"],
     },
     "이웃과의 관계": {
-        "budget": "복지 + 안전",
-        "energy": "지역 커뮤니티 에너지",
-        "reason": "공동체 관계는 복지, 안전, 생활권 안정성과 함께 개선됩니다.",
+        "area": "복지·안전",
         "emoji": "🤝",
+        "short": "공동체·생활 안정성",
+        "color": PALETTE["yellow"],
     },
 }
 
@@ -132,12 +132,12 @@ st.markdown(
 }}
 
 .block-container {{
-    padding-top: 1.6rem;
+    padding-top: 1.5rem;
     padding-bottom: 3rem;
 }}
 
 section[data-testid="stSidebar"] {{
-    background: linear-gradient(180deg, #EAF4FF 0%, #FFFFFF 100%);
+    background: linear-gradient(180deg, #EFF6FF 0%, #FFFFFF 100%);
     border-right: 1px solid {PALETTE["line"]};
 }}
 
@@ -157,19 +157,19 @@ div[data-testid="stMetricDelta"] {{
 
 .hero {{
     background:
-        radial-gradient(circle at 6% 18%, rgba(191,167,232,0.35) 0, rgba(191,167,232,0.00) 32%),
-        linear-gradient(135deg, #D9ECFF 0%, #E8F7F3 52%, #F7F3FF 100%);
+        radial-gradient(circle at 7% 18%, rgba(191,167,232,0.34) 0, rgba(191,167,232,0.00) 32%),
+        linear-gradient(135deg, #DDEEFF 0%, #EAF8F4 52%, #F7F3FF 100%);
     border: 1px solid #CFE0F2;
-    border-radius: 28px;
-    padding: 30px 34px;
+    border-radius: 30px;
+    padding: 32px 36px;
     box-shadow: 0 16px 34px rgba(36,59,83,0.10);
-    margin-bottom: 18px;
+    margin-bottom: 22px;
 }}
 
 .hero-grid {{
     display: grid;
     grid-template-columns: 1.35fr 0.85fr;
-    gap: 26px;
+    gap: 30px;
     align-items: center;
 }}
 
@@ -182,7 +182,7 @@ div[data-testid="stMetricDelta"] {{
     padding: 7px 13px;
     font-size: 0.82rem;
     font-weight: 900;
-    margin-bottom: 12px;
+    margin-bottom: 13px;
 }}
 
 .hero-title {{
@@ -190,22 +190,22 @@ div[data-testid="stMetricDelta"] {{
     line-height: 1.25;
     font-weight: 950;
     letter-spacing: -0.04em;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }}
 
 .hero-subtitle {{
     color: {PALETTE["muted"]};
-    font-size: 1.02rem;
-    line-height: 1.75;
-    max-width: 920px;
+    font-size: 1.03rem;
+    line-height: 1.72;
+    max-width: 900px;
 }}
 
 .hero-panel {{
-    background: rgba(255,255,255,0.76);
+    background: rgba(255,255,255,0.78);
     border: 1px solid #D5E3F3;
-    border-radius: 22px;
+    border-radius: 24px;
     padding: 18px 20px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.85);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.88);
 }}
 
 .hero-row {{
@@ -215,7 +215,7 @@ div[data-testid="stMetricDelta"] {{
     align-items: center;
     border-bottom: 1px solid #D9E2EC;
     padding: 10px 0;
-    font-weight: 800;
+    font-weight: 850;
 }}
 
 .hero-row:last-child {{
@@ -233,19 +233,19 @@ div[data-testid="stMetricDelta"] {{
     border: 1px solid {PALETTE["line"]};
     border-radius: 20px;
     padding: 18px 20px;
-    height: 150px;
+    min-height: 148px;
     box-shadow: 0 10px 24px rgba(15,23,42,0.06);
 }}
 
 .metric-title {{
-    font-size: 0.92rem;
+    font-size: 0.9rem;
     font-weight: 850;
     color: {PALETTE["muted"]};
     margin-bottom: 8px;
 }}
 
 .metric-value {{
-    font-size: 2rem;
+    font-size: 1.95rem;
     font-weight: 950;
     color: {PALETTE["text"]};
     line-height: 1.1;
@@ -269,7 +269,7 @@ div[data-testid="stMetricDelta"] {{
     margin-bottom: 0.5rem;
 }}
 
-.story-card {{
+.section-card {{
     background: {PALETTE["surface"]};
     border: 1px solid {PALETTE["line"]};
     border-radius: 24px;
@@ -278,23 +278,23 @@ div[data-testid="stMetricDelta"] {{
     height: 100%;
 }}
 
-.story-title {{
+.section-title {{
     font-size: 1.25rem;
     font-weight: 950;
     margin-bottom: 10px;
 }}
 
-.story-text {{
+.section-text {{
     color: {PALETTE["muted"]};
-    line-height: 1.75;
+    line-height: 1.72;
     font-size: 0.98rem;
 }}
 
 .conclusion-box {{
-    background: linear-gradient(135deg, #1E3A5F 0%, #2563EB 100%);
-    border-radius: 24px;
-    padding: 26px 28px;
-    margin: 24px 0;
+    background: linear-gradient(135deg, #243B53 0%, #2563EB 100%);
+    border-radius: 26px;
+    padding: 25px 28px;
+    margin: 24px 0 18px;
     box-shadow: 0 16px 32px rgba(37,99,235,0.20);
 }}
 
@@ -309,43 +309,49 @@ div[data-testid="stMetricDelta"] {{
 }}
 
 .conclusion-text {{
-    line-height: 1.75;
-    opacity: 0.95;
+    line-height: 1.7;
+    opacity: 0.96;
 }}
 
-.cta-card {{
-    background: linear-gradient(135deg, #F0F7FF 0%, #F7F3FF 100%);
-    border: 1px solid #C7D7FE;
-    border-radius: 24px;
-    padding: 24px 26px;
-    box-shadow: 0 12px 28px rgba(37,99,235,0.11);
+.flow-grid {{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 18px 0 10px;
 }}
 
-.cta-title {{
-    font-size: 1.35rem;
-    font-weight: 950;
-    margin-bottom: 10px;
+.flow-card {{
+    background: #FFFFFF;
+    border: 1px solid {PALETTE["line"]};
+    border-radius: 22px;
+    padding: 20px 20px;
+    min-height: 170px;
+    box-shadow: 0 10px 24px rgba(15,23,42,0.05);
 }}
 
-.cta-text {{
-    color: {PALETTE["muted"]};
-    line-height: 1.75;
-    margin-bottom: 16px;
-}}
-
-.cta-button {{
-    display: inline-block;
-    background: #2563EB;
-    color: white !important;
-    text-decoration: none !important;
-    padding: 12px 18px;
+.flow-num {{
+    width: 38px;
+    height: 38px;
     border-radius: 14px;
-    font-weight: 900;
-    box-shadow: 0 8px 18px rgba(37,99,235,0.22);
+    background: #DBEAFE;
+    color: #1D4ED8 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 950;
+    margin-bottom: 12px;
 }}
 
-.cta-button:hover {{
-    background: #1D4ED8;
+.flow-title {{
+    font-size: 1.08rem;
+    font-weight: 950;
+    margin-bottom: 7px;
+}}
+
+.flow-text {{
+    color: {PALETTE["muted"]};
+    font-size: 0.94rem;
+    line-height: 1.6;
 }}
 
 .policy-map-card {{
@@ -360,14 +366,14 @@ div[data-testid="stMetricDelta"] {{
     display: flex;
     gap: 12px;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 7px;
 }}
 
 .policy-map-emoji {{
     width: 42px;
     height: 42px;
     border-radius: 14px;
-    background: #EEF6FF;
+    background: #EFF6FF;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -376,7 +382,7 @@ div[data-testid="stMetricDelta"] {{
 
 .policy-map-title {{
     font-weight: 950;
-    font-size: 1.05rem;
+    font-size: 1.03rem;
 }}
 
 .policy-map-sub {{
@@ -385,41 +391,12 @@ div[data-testid="stMetricDelta"] {{
     line-height: 1.55;
 }}
 
-.bridge-step {{
-    display: grid;
-    grid-template-columns: 42px 1fr;
-    gap: 14px;
-    align-items: start;
-    margin-bottom: 16px;
-}}
-
-.bridge-num {{
-    width: 42px;
-    height: 42px;
-    border-radius: 14px;
-    background: #DBEAFE;
-    color: #1D4ED8 !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 950;
-}}
-
-.bridge-step-title {{
-    font-weight: 950;
-    margin-bottom: 4px;
-}}
-
-.bridge-step-text {{
-    color: {PALETTE["muted"]};
-    line-height: 1.6;
-}}
-
 .stTabs [data-baseweb="tab-list"] {{
     gap: 0.35rem;
     background: #EEF4FB;
     border-radius: 16px;
     padding: 6px;
+    margin-top: 10px;
 }}
 
 .stTabs [data-baseweb="tab"] {{
@@ -444,7 +421,7 @@ div[data-testid="stMetricDelta"] {{
 }}
 
 @media (max-width: 900px) {{
-    .hero-grid {{
+    .hero-grid, .flow-grid {{
         grid-template-columns: 1fr;
     }}
 }}
@@ -472,7 +449,6 @@ def load_housing_satisfaction(path):
         raw = pd.read_csv(path, encoding="utf-8-sig")
 
     indicator_names = raw.iloc[0, 2:].tolist()
-
     df = raw[raw["특성별(1)"] == "지역별"].copy()
     df.columns = ["category", "region"] + indicator_names
     df = df.drop(columns=["category"])
@@ -490,7 +466,7 @@ def load_housing_satisfaction(path):
 data_path = find_data_path()
 if data_path is None:
     st.error(
-        "데이터 파일을 찾을 수 없습니다. 아래 둘 중 하나의 위치에 CSV 파일을 넣어주세요.\n\n"
+        "데이터 파일을 찾을 수 없습니다. CSV 파일을 아래 위치 중 하나에 넣어주세요.\n\n"
         "- data/현재_거주_지역의_주거환경_만족도_20260523172214.csv\n"
         "- data/현재_거주_지역의_주거환경_만족도_20260523172214(1).csv"
     )
@@ -549,7 +525,7 @@ def style_plotly_chart(fig, height=500):
             title_font=dict(color=PALETTE["text"]),
             font=dict(color=PALETTE["text"]),
         ),
-        margin=dict(l=40, r=40, t=70, b=40),
+        margin=dict(l=44, r=44, t=72, b=44),
     )
     return fig
 
@@ -573,7 +549,7 @@ def style_heatmap(fig, height=550):
             title_font=dict(color=PALETTE["text"]),
             tickfont=dict(color=PALETTE["text"]),
         ),
-        margin=dict(l=40, r=40, t=70, b=40),
+        margin=dict(l=44, r=44, t=72, b=44),
     )
     return fig
 
@@ -599,7 +575,7 @@ def style_polar_chart(fig, height=520):
         paper_bgcolor="white",
         font=dict(color=PALETTE["text"], size=13),
         title_font=dict(color=PALETTE["text"], size=19),
-        margin=dict(l=80, r=80, t=80, b=80),
+        margin=dict(l=84, r=84, t=82, b=82),
     )
     return fig
 
@@ -608,39 +584,41 @@ def style_polar_chart(fig, height=520):
 # 분석 보조 함수
 # ============================================================
 def get_weak_indicators(row, n=3):
-    values = row[indicator_cols].sort_values(ascending=True)
-    return values.head(n)
+    return row[indicator_cols].sort_values(ascending=True).head(n)
 
 
 def get_strong_indicators(row, n=3):
-    values = row[indicator_cols].sort_values(ascending=False)
-    return values.head(n)
+    return row[indicator_cols].sort_values(ascending=False).head(n)
 
 
-def policy_recommendation_from_city(row):
-    weak = get_weak_indicators(row, 3)
-    mapped = []
-    for indicator, score in weak.items():
-        info = INDICATOR_TO_POLICY.get(
-            indicator,
-            {
-                "budget": "일반 인프라",
-                "energy": "ESS",
-                "reason": "도시 기반 서비스 개선으로 연결할 수 있습니다.",
-                "emoji": "🏙️",
-            },
-        )
-        mapped.append(
-            {
-                "indicator": indicator,
-                "score": score,
-                "budget": info["budget"],
-                "energy": info["energy"],
-                "reason": info["reason"],
-                "emoji": info["emoji"],
-            }
-        )
-    return mapped
+def get_allocation_count_table():
+    rows = []
+    for _, row in df.iterrows():
+        weak = get_weak_indicators(row, 3)
+        for indicator, score in weak.items():
+            info = INDICATOR_TO_ALLOCATION.get(indicator)
+            if info:
+                rows.append(
+                    {
+                        "region": row["region"],
+                        "취약 지표": indicator,
+                        "만족도": score,
+                        "배분 영역": info["area"],
+                    }
+                )
+    weak_df = pd.DataFrame(rows)
+
+    if weak_df.empty:
+        return weak_df, pd.DataFrame(columns=["배분 영역", "빈도"])
+
+    count_df = (
+        weak_df.groupby("배분 영역")
+        .size()
+        .reset_index(name="빈도")
+        .sort_values("빈도", ascending=False)
+    )
+
+    return weak_df, count_df
 
 
 def render_metric_card(title, value, desc):
@@ -656,20 +634,34 @@ def render_metric_card(title, value, desc):
     )
 
 
-def render_simulation_cta():
+def render_distribution_flow():
     st.markdown(
-        f"""
-        <div class="cta-card">
-            <div class="cta-title">다음 단계: 예산 및 에너지 배분 시뮬레이션으로 이동</div>
-            <div class="cta-text">
-                광역지표 대시보드는 도시별 만족도 차이를 보여줍니다.
-                하지만 차이를 확인하는 것만으로는 정책 판단이 끝나지 않습니다.
-                이제 <b>복지, 교육, 에너지 인프라, 일반 인프라, 안전</b> 예산을 어떻게 배분할지,
-                그리고 <b>태양광, 수소연료전지, ESS, 외부전력망</b>을 어떻게 조합할지 실험해야 합니다.
+        """
+        <div class="flow-grid">
+            <div class="flow-card">
+                <div class="flow-num">1</div>
+                <div class="flow-title">지역 간 차이가 있다</div>
+                <div class="flow-text">
+                    시도별 종합 만족도와 세부 지표가 동일하지 않습니다.
+                    도시의 수준은 하나의 평균값으로 설명되지 않습니다.
+                </div>
             </div>
-            <a class="cta-button" href="{SIMULATION_URL}" target="_blank">
-                예산 및 에너지 배분 시뮬레이션 열기 →
-            </a>
+            <div class="flow-card">
+                <div class="flow-num">2</div>
+                <div class="flow-title">차이는 지표별로 다르다</div>
+                <div class="flow-text">
+                    어떤 지역은 교통이 약하고, 어떤 지역은 교육·녹지·방범이 약합니다.
+                    필요한 처방이 서로 다릅니다.
+                </div>
+            </div>
+            <div class="flow-card">
+                <div class="flow-num">3</div>
+                <div class="flow-title">그래서 배분이 중요하다</div>
+                <div class="flow-text">
+                    문제는 기술의 유무가 아니라,
+                    한정된 자원을 어디에 우선 배분할 것인가입니다.
+                </div>
+            </div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -712,22 +704,14 @@ top_n = st.sidebar.slider(
 )
 
 st.sidebar.markdown("---")
-st.sidebar.markdown("### 대시보드 흐름")
+st.sidebar.markdown("### 해석 흐름")
 st.sidebar.markdown(
     """
-1. 지역별 만족도 격차 확인  
-2. 취약 지표 확인  
-3. 취약 지표를 예산·에너지 변수로 번역  
-4. 시뮬레이션에서 배분 전략 실험  
+- 만족도 차이 확인
+- 취약 지표 확인
+- 취약 지표를 배분 영역으로 해석
+- 결론 도출
 """
-)
-st.sidebar.markdown(
-    f"""
-<a class="cta-button" href="{SIMULATION_URL}" target="_blank" style="display:block;text-align:center;margin-top:10px;">
-시뮬레이션으로 이동
-</a>
-""",
-    unsafe_allow_html=True,
 )
 
 if "전체" in selected_groups:
@@ -740,32 +724,40 @@ filtered_df = filtered_df.sort_values(selected_indicator, ascending=ascending).h
 
 
 # ============================================================
-# 헤더
+# 핵심 지표 계산
 # ============================================================
 full_avg = df["종합 주거환경 만족도"].mean()
 top_region = df.loc[df["종합 주거환경 만족도"].idxmax()]
 low_region = df.loc[df["종합 주거환경 만족도"].idxmin()]
 gap = top_region["종합 주거환경 만족도"] - low_region["종합 주거환경 만족도"]
+indicator_avg = df[indicator_cols].mean().sort_values(ascending=False)
+indicator_std = df[indicator_cols].std().sort_values(ascending=False)
+most_divided_indicator = indicator_std.index[0]
+lowest_avg_indicator = indicator_avg.index[-1]
+weak_df, allocation_count_df = get_allocation_count_table()
 
+
+# ============================================================
+# 헤더
+# ============================================================
 st.markdown(
     f"""
     <div class="hero">
         <div class="hero-grid">
             <div>
-                <div class="hero-eyebrow">Regional Housing Satisfaction → Policy Allocation Simulator</div>
-                <div class="hero-title">시도별 주거환경 만족도는<br>도시의 차이를 보여주고, 배분 시뮬레이션은 그 차이를 바꾸는 방법을 실험합니다.</div>
+                <div class="hero-eyebrow">Regional Housing Satisfaction Dashboard</div>
+                <div class="hero-title">도시 만족도의 차이는<br>어디에 자원이 배분되었는지를 보여준다.</div>
                 <div class="hero-subtitle">
-                    이 대시보드는 생활 인프라, 대중교통, 치안, 위생, 녹지, 문화, 교육, 이웃 관계의 만족도를 비교합니다.
-                    여기서 확인한 지역 간 격차와 취약 지표를 바탕으로
-                    <b>“기술이 아니라 배분이 도시의 수준을 결정한다”</b>는 결론으로 이어지고,
-                    다음 단계에서 예산 및 에너지 배분 시뮬레이션을 실행합니다.
+                    시도별 주거환경 만족도를 생활 인프라, 교통, 방범, 위생, 녹지, 문화, 교육, 이웃 관계로 나누어 봅니다.
+                    이 대시보드의 목적은 순위를 매기는 것이 아니라
+                    <b>왜 도시 수준을 결정하는 핵심이 ‘기술’보다 ‘배분’인지</b>를 시각적으로 확인하는 것입니다.
                 </div>
             </div>
             <div class="hero-panel">
                 <div class="hero-row"><span>전국 평균</span><span class="hero-value">{full_avg:.2f} / 5</span></div>
                 <div class="hero-row"><span>최고 지역</span><span class="hero-value">{top_region["region"]} {top_region["종합 주거환경 만족도"]:.2f}</span></div>
                 <div class="hero-row"><span>최저 지역</span><span class="hero-value">{low_region["region"]} {low_region["종합 주거환경 만족도"]:.2f}</span></div>
-                <div class="hero-row"><span>지역 간 격차</span><span class="hero-value">{gap:.2f}점</span></div>
+                <div class="hero-row"><span>격차</span><span class="hero-value">{gap:.2f}점</span></div>
             </div>
         </div>
     </div>
@@ -773,35 +765,30 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-
-# ============================================================
-# 핵심 카드
-# ============================================================
 c1, c2, c3, c4 = st.columns(4)
 
 with c1:
     render_metric_card("전국 평균", f"{full_avg:.2f} / 5", "8개 주거환경 지표 평균")
 
 with c2:
-    render_metric_card("만족도 최고 지역", top_region["region"], f"{top_region['종합 주거환경 만족도']:.2f}점")
+    render_metric_card("지역 간 격차", f"{gap:.2f}점", f"{top_region['region']} - {low_region['region']}")
 
 with c3:
-    render_metric_card("만족도 최저 지역", low_region["region"], f"{low_region['종합 주거환경 만족도']:.2f}점")
+    render_metric_card("전국 평균 최저 지표", lowest_avg_indicator, f"{indicator_avg[lowest_avg_indicator]:.2f}점")
 
 with c4:
-    render_metric_card("지역 간 격차", f"{gap:.2f}점", "최고 지역 - 최저 지역")
+    render_metric_card("지역 차이가 큰 지표", most_divided_indicator, f"표준편차 {indicator_std[most_divided_indicator]:.2f}")
 
+render_distribution_flow()
 
 st.markdown(
     """
     <div class="conclusion-box">
-        <div class="conclusion-title">핵심 결론</div>
+        <div class="conclusion-title">중간 결론</div>
         <div class="conclusion-text">
-            지역별 만족도 차이는 단순히 도시가 크거나 기술이 많아서 생기는 차이가 아닙니다.
-            생활 인프라, 교통, 치안, 녹지, 교육처럼 시민이 체감하는 자원이
-            어디에 얼마나 배분되었는지가 도시 만족도의 차이를 만듭니다.
-            따라서 다음 질문은 <b>“어떤 기술을 넣을 것인가?”</b>가 아니라
-            <b>“한정된 예산과 에너지를 어디에 배분할 것인가?”</b>입니다.
+            같은 ‘도시’라도 부족한 지표는 서로 다릅니다.
+            따라서 좋은 도시는 기술을 많이 넣은 도시가 아니라,
+            각 지역에 필요한 자원을 정확히 배분한 도시입니다.
         </div>
     </div>
     """,
@@ -812,23 +799,22 @@ st.markdown(
 # ============================================================
 # 탭 구성
 # ============================================================
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
+tab1, tab2, tab3, tab4, tab5 = st.tabs(
     [
-        "종합 현황",
-        "지표별 비교",
-        "권역 분석",
-        "도시 프로필",
-        "정책 전환",
-        "데이터 표",
+        "종합 격차",
+        "지표 구조",
+        "권역 패턴",
+        "도시별 진단",
+        "결론 도출",
     ]
 )
 
 
 # ============================================================
-# TAB 1. 종합 현황
+# TAB 1. 종합 격차
 # ============================================================
 with tab1:
-    st.markdown('<span class="small-label">Overview</span>', unsafe_allow_html=True)
+    st.markdown('<span class="small-label">Gap Overview</span>', unsafe_allow_html=True)
     st.subheader("시도별 종합 주거환경 만족도")
 
     if view_mode == "차트 중심":
@@ -849,6 +835,14 @@ with tab1:
             marker_line_color="white",
             textfont=dict(color=PALETTE["text"]),
         )
+        fig.add_hline(
+            y=full_avg if selected_indicator == "종합 주거환경 만족도" else df[selected_indicator].mean(),
+            line_dash="dash",
+            line_color=PALETTE["red"],
+            annotation_text="전국 평균",
+            annotation_position="top left",
+            annotation_font_color=PALETTE["text"],
+        )
         fig = style_plotly_chart(fig, height=520)
         fig.update_yaxes(range=[0, 5])
         st.plotly_chart(fig, use_container_width=True)
@@ -856,11 +850,12 @@ with tab1:
         st.dataframe(
             filtered_df[["권역", "region", selected_indicator]].reset_index(drop=True),
             use_container_width=True,
+            hide_index=True,
         )
 
     st.markdown("---")
 
-    col_left, col_right = st.columns([1.2, 1])
+    col_left, col_right = st.columns([1.15, 1])
 
     with col_left:
         st.subheader("상위·하위 지역 비교")
@@ -922,17 +917,15 @@ with tab1:
         fig.update_yaxes(range=[0, 5])
         st.plotly_chart(fig, use_container_width=True)
 
-    render_simulation_cta()
-
 
 # ============================================================
-# TAB 2. 지표별 비교
+# TAB 2. 지표 구조
 # ============================================================
 with tab2:
-    st.markdown('<span class="small-label">Indicator Comparison</span>', unsafe_allow_html=True)
-    st.subheader("세부 지표별 도시 비교")
+    st.markdown('<span class="small-label">Indicator Structure</span>', unsafe_allow_html=True)
+    st.subheader("세부 지표가 보여주는 배분의 흔적")
 
-    col1, col2 = st.columns([1.2, 1])
+    col1, col2 = st.columns([1.18, 1])
 
     with col1:
         heatmap_df = df.set_index("region")[indicator_cols]
@@ -952,18 +945,23 @@ with tab2:
         st.plotly_chart(fig, use_container_width=True)
 
     with col2:
-        indicator_avg = df[indicator_cols].mean().sort_values(ascending=False).reset_index()
-        indicator_avg.columns = ["지표", "전국 평균"]
+        indicator_summary = pd.DataFrame(
+            {
+                "지표": indicator_avg.index,
+                "전국 평균": indicator_avg.values,
+                "지역 차이": [indicator_std[i] for i in indicator_avg.index],
+            }
+        ).sort_values("전국 평균", ascending=True)
 
         fig = px.bar(
-            indicator_avg,
+            indicator_summary,
             x="전국 평균",
             y="지표",
             orientation="h",
             text="전국 평균",
-            title="지표별 전국 평균",
+            title="전국 평균이 낮은 지표",
             color="전국 평균",
-            color_continuous_scale="Teal",
+            color_continuous_scale="Blues",
         )
         fig.update_traces(
             texttemplate="%{text:.2f}",
@@ -975,52 +973,73 @@ with tab2:
         st.plotly_chart(fig, use_container_width=True)
 
     st.markdown("---")
-    st.subheader("선택 지표 상세 순위")
 
-    selected_detail_indicator = st.selectbox(
-        "상세 비교할 지표",
-        indicator_cols,
-        key="detail_indicator",
-    )
+    col_a, col_b = st.columns([1, 1])
 
-    detail_df = df.sort_values(selected_detail_indicator, ascending=False)
+    with col_a:
+        st.subheader("지역별 차이가 큰 지표")
+        std_df = indicator_std.reset_index()
+        std_df.columns = ["지표", "표준편차"]
 
-    fig = px.line(
-        detail_df,
-        x="region",
-        y=selected_detail_indicator,
-        markers=True,
-        title=f"{selected_detail_indicator} 시도별 비교",
-        labels={"region": "시도", selected_detail_indicator: "만족도"},
-    )
-    fig.add_hline(
-        y=detail_df[selected_detail_indicator].mean(),
-        line_dash="dash",
-        line_color=PALETTE["red"],
-        annotation_text="평균",
-        annotation_position="top left",
-        annotation_font_color=PALETTE["text"],
-    )
-    fig.update_traces(
-        line=dict(width=3, color=PALETTE["blue_dark"]),
-        marker=dict(size=9, color=PALETTE["blue_dark"]),
-    )
-    fig = style_plotly_chart(fig, height=430)
-    fig.update_yaxes(range=[0, 5])
-    st.plotly_chart(fig, use_container_width=True)
+        fig = px.bar(
+            std_df.sort_values("표준편차"),
+            x="표준편차",
+            y="지표",
+            orientation="h",
+            text="표준편차",
+            title="지표별 지역 간 편차",
+            color="표준편차",
+            color_continuous_scale="Purples",
+        )
+        fig.update_traces(
+            texttemplate="%{text:.2f}",
+            textposition="outside",
+            textfont=dict(color=PALETTE["text"]),
+        )
+        fig = style_plotly_chart(fig, height=430)
+        st.plotly_chart(fig, use_container_width=True)
 
-    st.info(
-        "지표별 비교는 어떤 도시가 낮은지만 보여주는 것이 아니라, "
-        "다음 시뮬레이션에서 어떤 예산 항목을 조정해야 하는지 알려주는 출발점입니다."
-    )
+    with col_b:
+        st.subheader("선택 지표 상세 순위")
+        selected_detail_indicator = st.selectbox(
+            "상세 비교할 지표",
+            indicator_cols,
+            key="detail_indicator",
+        )
+
+        detail_df = df.sort_values(selected_detail_indicator, ascending=False)
+
+        fig = px.line(
+            detail_df,
+            x="region",
+            y=selected_detail_indicator,
+            markers=True,
+            title=f"{selected_detail_indicator} 시도별 비교",
+            labels={"region": "시도", selected_detail_indicator: "만족도"},
+        )
+        fig.add_hline(
+            y=detail_df[selected_detail_indicator].mean(),
+            line_dash="dash",
+            line_color=PALETTE["red"],
+            annotation_text="평균",
+            annotation_position="top left",
+            annotation_font_color=PALETTE["text"],
+        )
+        fig.update_traces(
+            line=dict(width=3, color=PALETTE["blue_dark"]),
+            marker=dict(size=9, color=PALETTE["blue_dark"]),
+        )
+        fig = style_plotly_chart(fig, height=430)
+        fig.update_yaxes(range=[0, 5])
+        st.plotly_chart(fig, use_container_width=True)
 
 
 # ============================================================
-# TAB 3. 권역 분석
+# TAB 3. 권역 패턴
 # ============================================================
 with tab3:
-    st.markdown('<span class="small-label">Region Group</span>', unsafe_allow_html=True)
-    st.subheader("권역별 주거환경 만족도")
+    st.markdown('<span class="small-label">Regional Pattern</span>', unsafe_allow_html=True)
+    st.subheader("권역별 주거환경 만족도 패턴")
 
     group_df = df.groupby("권역")[["종합 주거환경 만족도"] + indicator_cols].mean().reset_index()
 
@@ -1062,34 +1081,30 @@ with tab3:
         st.plotly_chart(fig, use_container_width=True)
 
     st.markdown("---")
-    st.subheader("권역 구성 비중")
+    st.subheader("권역별 강점·약점 요약")
 
-    count_df = df.groupby("권역").size().reset_index(name="지역 수")
+    summary_rows = []
+    for _, row in group_df.iterrows():
+        weak = row[indicator_cols].idxmin()
+        strong = row[indicator_cols].idxmax()
+        summary_rows.append(
+            {
+                "권역": row["권역"],
+                "강점 지표": strong,
+                "강점 점수": round(row[strong], 2),
+                "취약 지표": weak,
+                "취약 점수": round(row[weak], 2),
+            }
+        )
 
-    fig = px.treemap(
-        count_df,
-        path=["권역"],
-        values="지역 수",
-        title="권역별 포함 시도 수",
-        color="지역 수",
-        color_continuous_scale="Blues",
-    )
-    fig.update_traces(textfont=dict(color=PALETTE["text"], size=16))
-    fig.update_layout(
-        height=430,
-        font=dict(color=PALETTE["text"]),
-        title_font=dict(color=PALETTE["text"], size=19),
-        paper_bgcolor="white",
-        margin=dict(l=30, r=30, t=70, b=30),
-    )
-    st.plotly_chart(fig, use_container_width=True)
+    st.dataframe(pd.DataFrame(summary_rows), use_container_width=True, hide_index=True)
 
 
 # ============================================================
-# TAB 4. 도시 프로필
+# TAB 4. 도시별 진단
 # ============================================================
 with tab4:
-    st.markdown('<span class="small-label">City Profile</span>', unsafe_allow_html=True)
+    st.markdown('<span class="small-label">City Diagnosis</span>', unsafe_allow_html=True)
     st.subheader("도시별 주거환경 프로필")
 
     selected_city = st.selectbox("도시 선택", df["region"].tolist())
@@ -1140,7 +1155,6 @@ with tab4:
                 "전국 평균": [df[col].mean() for col in indicator_cols],
             }
         )
-
         city_indicator_df["평균 대비"] = city_indicator_df["만족도"] - city_indicator_df["전국 평균"]
 
         fig = px.bar(
@@ -1156,71 +1170,50 @@ with tab4:
         fig = style_plotly_chart(fig, height=520)
         st.plotly_chart(fig, use_container_width=True)
 
-    weak_items = city_indicator_df.sort_values("만족도").head(3)
-    strong_items = city_indicator_df.sort_values("만족도", ascending=False).head(3)
-
     st.markdown("---")
-    col_a, col_b = st.columns(2)
+    st.subheader("이 도시의 취약 지표는 어떤 배분 영역을 가리키는가?")
 
-    with col_a:
-        st.warning(f"{selected_city}의 상대적 취약 지표")
-        st.dataframe(
-            weak_items[["지표", "만족도", "전국 평균", "평균 대비"]],
-            use_container_width=True,
-        )
+    weak_items = get_weak_indicators(city_row, 3)
 
-    with col_b:
-        st.success(f"{selected_city}의 상대적 강점 지표")
-        st.dataframe(
-            strong_items[["지표", "만족도", "전국 평균", "평균 대비"]],
-            use_container_width=True,
-        )
+    for indicator, score in weak_items.items():
+        info = INDICATOR_TO_ALLOCATION.get(indicator)
+        if info is None:
+            continue
 
-    st.markdown("### 취약 지표 → 시뮬레이션 변수로 번역")
-    recommendations = policy_recommendation_from_city(city_row)
-
-    for rec in recommendations:
         st.markdown(
             f"""
             <div class="policy-map-card">
                 <div class="policy-map-head">
-                    <div class="policy-map-emoji">{rec["emoji"]}</div>
+                    <div class="policy-map-emoji">{info["emoji"]}</div>
                     <div>
-                        <div class="policy-map-title">{rec["indicator"]} {rec["score"]:.2f}점 → {rec["budget"]} 예산 조정</div>
-                        <div class="policy-map-sub">에너지 방향: {rec["energy"]}</div>
+                        <div class="policy-map-title">{indicator} {score:.2f}점 → {info["area"]}</div>
+                        <div class="policy-map-sub">{info["short"]}</div>
                     </div>
                 </div>
-                <div class="policy-map-sub">{rec["reason"]}</div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-    render_simulation_cta()
-
 
 # ============================================================
-# TAB 5. 정책 전환
+# TAB 5. 결론 도출
 # ============================================================
 with tab5:
-    st.markdown('<span class="small-label">Bridge to Simulation</span>', unsafe_allow_html=True)
-    st.subheader("광역지표에서 예산·에너지 배분 시뮬레이션으로")
+    st.markdown('<span class="small-label">Conclusion</span>', unsafe_allow_html=True)
+    st.subheader("왜 ‘기술’보다 ‘배분’인가?")
 
     col_left, col_right = st.columns([1, 1])
 
     with col_left:
         st.markdown(
             """
-            <div class="story-card">
-                <div class="story-title">왜 두 번째 대시보드가 필요한가?</div>
-                <div class="story-text">
-                    첫 번째 대시보드는 지역별 주거환경 만족도의 차이를 보여줍니다.
-                    하지만 “어느 지역이 높고 낮은가”만으로는 정책 대안을 만들기 어렵습니다.
-                    그래서 두 번째 대시보드는 만족도 차이를 만든 원인을
-                    예산과 에너지 배분이라는 조작 가능한 변수로 바꾸어 실험합니다.
-                    <br><br>
-                    즉, 이 대시보드의 결론은 다음과 같습니다.
-                    <br><b>기술이 아니라 배분이 도시의 수준을 결정한다.</b>
+            <div class="section-card">
+                <div class="section-title">핵심 논리</div>
+                <div class="section-text">
+                    주거환경 만족도는 하나의 기술 점수가 아닙니다.
+                    교통, 교육, 방범, 녹지, 문화처럼 서로 다른 생활 조건의 조합입니다.
+                    따라서 낮은 만족도는 ‘기술 부족’보다 ‘필요한 영역에 자원이 충분히 배분되지 않은 상태’로 해석할 수 있습니다.
                 </div>
             </div>
             """,
@@ -1230,28 +1223,13 @@ with tab5:
     with col_right:
         st.markdown(
             """
-            <div class="story-card">
-                <div class="story-title">대시보드 연결 흐름</div>
-                <div class="bridge-step">
-                    <div class="bridge-num">1</div>
-                    <div>
-                        <div class="bridge-step-title">시도별 만족도 격차 확인</div>
-                        <div class="bridge-step-text">생활 인프라, 교통, 치안, 녹지, 교육 등 지표별 차이를 확인합니다.</div>
-                    </div>
-                </div>
-                <div class="bridge-step">
-                    <div class="bridge-num">2</div>
-                    <div>
-                        <div class="bridge-step-title">취약 지표를 정책 변수로 번역</div>
-                        <div class="bridge-step-text">낮은 지표를 복지, 교육, 에너지 인프라, 일반 인프라, 안전 예산으로 연결합니다.</div>
-                    </div>
-                </div>
-                <div class="bridge-step">
-                    <div class="bridge-num">3</div>
-                    <div>
-                        <div class="bridge-step-title">배분 시뮬레이션 실행</div>
-                        <div class="bridge-step-text">예산과 에너지 비율을 바꿔 시민 만족도와 에너지 자립률 변화를 실험합니다.</div>
-                    </div>
+            <div class="section-card">
+                <div class="section-title">시각화가 보여준 것</div>
+                <div class="section-text">
+                    지역별 순위는 다르고, 지표별 취약점도 다릅니다.
+                    어떤 도시는 교통이, 어떤 도시는 교육이나 녹지가 더 낮습니다.
+                    결국 좋은 도시는 같은 기술을 똑같이 넣은 도시가 아니라
+                    필요한 곳에 필요한 자원을 배치한 도시입니다.
                 </div>
             </div>
             """,
@@ -1259,48 +1237,70 @@ with tab5:
         )
 
     st.markdown("---")
-    st.subheader("지표와 시뮬레이션 변수 연결표")
 
-    map_rows = []
-    for indicator in indicator_cols:
-        info = INDICATOR_TO_POLICY.get(indicator)
-        if info:
-            map_rows.append(
-                {
-                    "주거환경 지표": indicator,
-                    "연결되는 예산 변수": info["budget"],
-                    "연결되는 에너지 방향": info["energy"],
-                    "해석": info["reason"],
-                }
+    col_a, col_b = st.columns([1.1, 1])
+
+    with col_a:
+        st.subheader("취약 지표가 모이는 배분 영역")
+
+        if not allocation_count_df.empty:
+            fig = px.bar(
+                allocation_count_df.sort_values("빈도"),
+                x="빈도",
+                y="배분 영역",
+                orientation="h",
+                text="빈도",
+                title="지역별 하위 3개 지표를 배분 영역으로 변환",
+                color="빈도",
+                color_continuous_scale="Blues",
             )
+            fig.update_traces(
+                textposition="outside",
+                textfont=dict(color=PALETTE["text"]),
+            )
+            fig = style_plotly_chart(fig, height=430)
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("배분 영역으로 변환할 취약 지표가 없습니다.")
 
-    st.dataframe(pd.DataFrame(map_rows), use_container_width=True, hide_index=True)
+    with col_b:
+        st.subheader("지표 → 배분 영역 연결표")
+
+        map_rows = []
+        for indicator in indicator_cols:
+            info = INDICATOR_TO_ALLOCATION.get(indicator)
+            if info:
+                map_rows.append(
+                    {
+                        "주거환경 지표": indicator,
+                        "배분 영역": info["area"],
+                        "해석": info["short"],
+                    }
+                )
+
+        st.dataframe(pd.DataFrame(map_rows), use_container_width=True, hide_index=True)
 
     st.markdown(
         """
         <div class="conclusion-box">
-            <div class="conclusion-title">최종 연결 문장</div>
+            <div class="conclusion-title">최종 결론</div>
             <div class="conclusion-text">
-                광역지표는 도시의 현재 상태를 보여주고,
-                예산 및 에너지 배분 시뮬레이션은 그 상태를 바꾸기 위한 정책 실험 공간입니다.
-                따라서 첫 번째 대시보드에서 확인한 취약 지표는
-                두 번째 대시보드의 예산·에너지 슬라이더를 조정하는 근거가 됩니다.
+                도시의 수준은 기술의 양만으로 결정되지 않습니다.
+                시민이 체감하는 주거환경은 생활 인프라, 교통, 교육, 안전, 녹지처럼
+                서로 다른 자원이 어떻게 배분되었는지에 따라 달라집니다.
+                <br><br>
+                <b>기술이 아니라 배분이 도시의 수준을 결정한다.</b>
             </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    render_simulation_cta()
-
 
 # ============================================================
-# TAB 6. 데이터 표
+# 하단 데이터 표
 # ============================================================
-with tab6:
-    st.markdown('<span class="small-label">Data Table</span>', unsafe_allow_html=True)
-    st.subheader("전처리 데이터")
-
+with st.expander("전처리 데이터 보기"):
     st.dataframe(
         df.sort_values("종합 주거환경 만족도", ascending=False),
         use_container_width=True,
@@ -1314,23 +1314,3 @@ with tab6:
         file_name="housing_satisfaction_processed.csv",
         mime="text/csv",
     )
-
-
-# ============================================================
-# 하단 설명
-# ============================================================
-st.markdown("---")
-st.markdown(
-    f"""
-### 분석 해석 방향
-
-이 대시보드는 시도별 주거환경 만족도를 스마트시티 시민 체감 만족도의 기초 지표로 사용합니다.  
-분석의 핵심은 단순한 순위 비교가 아니라, 지역별 취약 지표를 찾아
-다음 단계의 예산·에너지 배분 변수로 연결하는 것입니다.
-
-**결론: 기술이 아니라 배분이 도시의 수준을 결정한다.**
-
-<a href="{SIMULATION_URL}" target="_blank">예산 및 에너지 배분 시뮬레이션으로 이동하기 →</a>
-""",
-    unsafe_allow_html=True,
-)
