@@ -473,37 +473,37 @@ section[data-testid="stSidebar"] [aria-selected="true"] {{
 /* ===== 권역 선택 태그 색상 보정 ===== */
 section[data-testid="stSidebar"] div[data-baseweb="tag"],
 section[data-testid="stSidebar"] span[data-baseweb="tag"],
-section[data-testid="stSidebar"] [data-baseweb="tag"] {
+section[data-testid="stSidebar"] [data-baseweb="tag"] {{
     background-color: #E3EEFF !important;
     border: 1px solid #AFC7E8 !important;
     border-radius: 10px !important;
     box-shadow: none !important;
-}
+}}
 
 section[data-testid="stSidebar"] div[data-baseweb="tag"] *,
 section[data-testid="stSidebar"] span[data-baseweb="tag"] *,
-section[data-testid="stSidebar"] [data-baseweb="tag"] * {
+section[data-testid="stSidebar"] [data-baseweb="tag"] * {{
     color: #1E3A8A !important;
     -webkit-text-fill-color: #1E3A8A !important;
     fill: #1E3A8A !important;
-}
+}}
 
 section[data-testid="stSidebar"] div[data-baseweb="tag"] svg,
 section[data-testid="stSidebar"] span[data-baseweb="tag"] svg,
-section[data-testid="stSidebar"] [data-baseweb="tag"] svg {
+section[data-testid="stSidebar"] [data-baseweb="tag"] svg {{
     color: #4F6FD9 !important;
     fill: #4F6FD9 !important;
-}
+}}
 
 /* Streamlit 버전에 따라 multiselect tag가 button 형태로 렌더링되는 경우까지 보정 */
 section[data-testid="stSidebar"] div[data-baseweb="select"] button,
-section[data-testid="stSidebar"] div[data-baseweb="select"] button * {
+section[data-testid="stSidebar"] div[data-baseweb="select"] button * {{
     background-color: #E3EEFF !important;
     color: #1E3A8A !important;
     -webkit-text-fill-color: #1E3A8A !important;
     border-color: #AFC7E8 !important;
     fill: #4F6FD9 !important;
-}
+}}
 </style>
 """,
     unsafe_allow_html=True,
