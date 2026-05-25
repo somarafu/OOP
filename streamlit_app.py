@@ -427,6 +427,48 @@ div[data-testid="stMetricDelta"] {{
         grid-template-columns: 1fr;
     }}
 }}
+
+/* ===== 사이드바 선택 입력값 가독성 보정 ===== */
+section[data-testid="stSidebar"] div[data-baseweb="select"] > div {{
+    background-color: #FFFFFF !important;
+    border: 1px solid #BFD4F2 !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08) !important;
+}}
+
+section[data-testid="stSidebar"] div[data-baseweb="select"] span,
+section[data-testid="stSidebar"] div[data-baseweb="select"] div,
+section[data-testid="stSidebar"] div[data-baseweb="select"] input {{
+    color: #111827 !important;
+    -webkit-text-fill-color: #111827 !important;
+}}
+
+section[data-testid="stSidebar"] div[data-baseweb="tag"] {{
+    background-color: #DBEAFE !important;
+    border: 1px solid #93C5FD !important;
+    border-radius: 10px !important;
+}}
+
+section[data-testid="stSidebar"] div[data-baseweb="tag"] span,
+section[data-testid="stSidebar"] div[data-baseweb="tag"] svg {{
+    color: #1E3A8A !important;
+    fill: #1E3A8A !important;
+}}
+
+section[data-testid="stSidebar"] div[data-baseweb="select"] svg {{
+    color: #2563EB !important;
+    fill: #2563EB !important;
+}}
+
+section[data-testid="stSidebar"] [role="listbox"],
+section[data-testid="stSidebar"] [role="option"] {{
+    color: #111827 !important;
+    background-color: #FFFFFF !important;
+}}
+
+section[data-testid="stSidebar"] [aria-selected="true"] {{
+    background-color: #DBEAFE !important;
+    color: #111827 !important;
+}}
 </style>
 """,
     unsafe_allow_html=True,
